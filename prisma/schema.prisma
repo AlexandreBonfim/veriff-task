@@ -13,3 +13,25 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model Verification {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  images    Image[]
+}
+
+model Image {
+  id             String         @id @default(uuid())
+  verificationId String
+  createdAt      DateTime       @default(now())
+  verification   Verification   @relation(fields: [verificationId], references: [id])
+  faceEncodings  FaceEncoding[]
+}
+
+model FaceEncoding {
+  id      String  @id @default(uuid())
+  vector  Float[]
+  imageId String
+  createdAt      DateTime       @default(now())
+  image   Image   @relation(fields: [imageId], references: [id])
+}
