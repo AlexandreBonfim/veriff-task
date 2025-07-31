@@ -1,5 +1,6 @@
 import {
   Controller,
+  Get,
   Param,
   Post,
   UploadedFile,
@@ -9,13 +10,24 @@ import { CreateVerificationUseCase } from './application/use-cases/create-verifi
 import { UploadImageUseCase } from './application/use-cases/upload-image.use-case';
 import * as multer from 'multer';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { GetVerificationSummaryUseCase } from './application/use-cases/get-summary.use-case';
 
 @Controller('verifications')
 export class VerificationController {
   constructor(
     private readonly createUseCase: CreateVerificationUseCase,
     private readonly uploadImageUseCase: UploadImageUseCase,
+    private readonly summaryUseCase: GetVerificationSummaryUseCase,
   ) {}
+
+  @Get(':id/summary')
+  async getSummary(@Param('id') verificationId: string) {
+    const faces = await this.summaryUseCase.execute(verificationId);
+    return {
+      verificationId,
+      faces,
+    };
+  }
 
   @Post()
   async create() {
