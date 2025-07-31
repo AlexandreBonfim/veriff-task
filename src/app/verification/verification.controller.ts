@@ -1,9 +1,21 @@
-import { Controller, Post } from '@nestjs/common';
+import {
+  Controller,
+  Param,
+  Post,
+  UploadedFile,
+  UseInterceptors,
+} from '@nestjs/common';
 import { CreateVerificationUseCase } from './application/use-cases/create-verification.use-case';
+import { UploadImageUseCase } from './application/use-cases/upload-image.use-case';
+import * as multer from 'multer';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('verifications')
 export class VerificationController {
-  constructor(private readonly createUseCase: CreateVerificationUseCase) {}
+  constructor(
+    private readonly createUseCase: CreateVerificationUseCase,
+    private readonly uploadImageUseCase: UploadImageUseCase,
+  ) {}
 
   @Post()
   async create() {
@@ -11,6 +23,23 @@ export class VerificationController {
     return {
       id: verification.id,
       createdAt: verification.createdAt,
+    };
+  }
+
+  @Post(':id/images')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: multer.memoryStorage(),
+    }),
+  )
+  async uploadImage(
+    @Param('id') verificationId: string,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    const image = await this.uploadImageUseCase.execute(verificationId, file);
+    return {
+      id: image.id,
+      createdAt: image.createdAt,
     };
   }
 }
