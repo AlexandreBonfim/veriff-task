@@ -2,24 +2,23 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# Copy package files
+# Install deps first (for caching)
 COPY package*.json ./
-COPY prisma ./prisma/
-
-# Install dependencies
 RUN npm ci
+
+# Copy Prisma files **first**
+COPY prisma ./prisma/
 
 # Generate Prisma client
 RUN npx prisma generate
 
-# Copy source code
+# Then copy the rest of your code
 COPY . .
 
-# Build the application
+# Build app
 RUN npm run build
 
-# Expose port
 EXPOSE 3000
 
-# Start the application
-CMD ["npm", "run", "start:prod"] 
+# Run migrations when container starts
+CMD ["sh", "-c", "npx prisma migrate deploy && npm run start:prod"]

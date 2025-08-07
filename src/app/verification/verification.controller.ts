@@ -29,15 +29,6 @@ export class VerificationController {
     };
   }
 
-  @Post()
-  async create() {
-    const verification = await this.createUseCase.execute();
-    return {
-      id: verification.id,
-      createdAt: verification.createdAt,
-    };
-  }
-
   @Post(':id/images')
   @UseInterceptors(
     FileInterceptor('file', {
@@ -52,6 +43,15 @@ export class VerificationController {
     return {
       id: image.id,
       createdAt: image.createdAt,
+    };
+  }
+
+  @Post()
+  async create() {
+    const verification = await this.createUseCase.execute();
+    return {
+      id: verification.id,
+      createdAt: verification.createdAt,
     };
   }
 }

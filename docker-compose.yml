@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   postgres:
     image: postgres:15
@@ -8,28 +7,37 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - "5432:5432"
+      - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 10s
       timeout: 5s
       retries: 5
+
+  face-encoder:
+    image: veriffdocker/face-encoding-test-task
+    container_name: veriff-encoder
+    ports:
+      - '8000:8000'
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   app:
     build: .
     container_name: veriff-app
     ports:
-      - "3000:3000"
+      - '3000:3000'
     environment:
-      # - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/veriff_db
-      - NODE_ENV=development
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/veriff_db
+      - FACE_ENCODER_API_URL=http://face-encoder:8000/v1/selfie
     depends_on:
       postgres:
         condition: service_healthy
-    volumes:
-      - ./uploads:/app/uploads
+      face-encoder:
+        condition: service_started
 
 volumes:
-  postgres_data: 
+  postgres_data:

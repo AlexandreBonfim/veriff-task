@@ -8,6 +8,8 @@ type FaceEncodingResponse = FaceEncodingVector[];
 
 @Injectable()
 export class ImageProcessingService {
+  private readonly faceApiUrl = process.env.FACE_ENCODER_API_URL;
+
   constructor(private readonly prisma: PrismaService) {}
 
   async processAndStoreFaces(
@@ -19,11 +21,9 @@ export class ImageProcessingService {
     form.append('file', buffer, filename);
 
     const response = await axios.post<FaceEncodingResponse>(
-      'http://localhost:8000/encode', // todo: create a cont file
+      this.faceApiUrl!,
       form,
-      {
-        headers: form.getHeaders(),
-      },
+      { headers: form.getHeaders() },
     );
 
     for (const vector of response.data) {
