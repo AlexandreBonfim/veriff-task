@@ -26,7 +26,14 @@ export class ImageProcessingService {
       { headers: form.getHeaders() },
     );
 
-    for (const vector of response.data) {
+    const vectors = response.data;
+
+    if (!vectors.length) {
+      console.warn(`No face encodings found for image: ${filename}`);
+      return;
+    }
+
+    for (const vector of vectors) {
       await this.prisma.faceEncoding.create({
         data: {
           imageId,
