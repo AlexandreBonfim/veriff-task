@@ -8,10 +8,18 @@ import {
 } from '@nestjs/common';
 import { CreateVerificationUseCase } from './application/use-cases/create-verification.use-case';
 import { UploadImageUseCase } from './application/use-cases/upload-image.use-case';
-import * as multer from 'multer';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { GetVerificationSummaryUseCase } from './application/use-cases/get-summary.use-case';
+import { FileInterceptor } from '@nestjs/platform-express';
+import * as multer from 'multer';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiConsumes,
+  ApiBody,
+  ApiParam,
+} from '@nestjs/swagger';
 
+@ApiTags('verifications')
 @Controller('verifications')
 export class VerificationController {
   constructor(
@@ -20,16 +28,34 @@ export class VerificationController {
     private readonly summaryUseCase: GetVerificationSummaryUseCase,
   ) {}
 
-  @Get(':id/summary')
-  async getSummary(@Param('id') verificationId: string) {
-    const faces = await this.summaryUseCase.execute(verificationId);
+  @Post()
+  @ApiOperation({ summary: 'Create a new verification container' })
+  async create() {
+    const verification = await this.createUseCase.execute();
     return {
-      verificationId,
-      faces,
+      id: verification.id,
+      createdAt: verification.createdAt,
     };
   }
 
   @Post(':id/images')
+  @ApiOperation({
+    summary: 'Upload an image to a verification container (max 5)',
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiParam({ name: 'id', description: 'Verification ID' })
+  @ApiBody({
+    description: 'Image file to process',
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
   @UseInterceptors(
     FileInterceptor('file', {
       storage: multer.memoryStorage(),
@@ -46,12 +72,16 @@ export class VerificationController {
     };
   }
 
-  @Post()
-  async create() {
-    const verification = await this.createUseCase.execute();
+  @Get(':id/summary')
+  @ApiOperation({
+    summary: 'Fetch all face encodings for a given verification',
+  })
+  @ApiParam({ name: 'id', description: 'Verification ID' })
+  async getSummary(@Param('id') verificationId: string) {
+    const faces = await this.summaryUseCase.execute(verificationId);
     return {
-      id: verification.id,
-      createdAt: verification.createdAt,
+      verificationId,
+      faces,
     };
   }
 }

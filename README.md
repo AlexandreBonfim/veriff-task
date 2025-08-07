@@ -45,6 +45,12 @@ This will:
 - Start PostgreSQL, Face Encoder, and NestJS app
 - Run Prisma migration on startup
 
+### 📘 Swagger Docs
+
+Once running, visit: [http://localhost:3000/api](http://localhost:3000/api)
+
+You can test all endpoints interactively, including file uploads.
+
 ## 🧪 API Endpoints
 
 ### ✅ Create Verification
